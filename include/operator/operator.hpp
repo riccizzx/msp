@@ -1,15 +1,9 @@
-
 #ifndef APP_OPERATOR_HPP
 #define APP_OPERATOR_HPP
 
-/* o operador sera uma "pessoa" da empresa, que tera nome cpf e demais informações... o operador ira assinar
- o documento de criacao do container, e sera responsavel por criar o container, e tambem sera responsavel por
- assinar o documento de criacao do container, e tambem sera responsavel por assinar o documento de criacao do container
-*/
+#include <string>
 
-#include <string.h>
-#include <iostream>
-
+#include <libcryptosec/KeyPair.h>
 #include <libcryptosec/RSAKeyPair.h>
 #include <libcryptosec/certificate/Certificate.h>
 
@@ -18,24 +12,23 @@ namespace sgc{
     namespace op{
 
         class Operator{
-                // cada operador tem seu par de chaves RSA 2048 bits, e seu certificado digital, que sera usado para assinar o documento de criacao do container
+
+            // criação do objeto Operator*, sera utilizado para assinar o documneto digital.
+            
             public:
                 Operator(
-                    const std::string nome,
-                    const std::string cpf,
-                    const std::string email,
-                    
+                    const std::string& name,
+                    const std::string& cpf,
+                    const std::string& email,
                     RSAKeyPair* keyPair,
-                    PublicKey* publicKey,
-                    PrivateKey* privateKey,
                     Certificate* certificate
                 );
-                
-                Operator(const Operator& op);
-                
+
+                Operator(const Operator& other);
+                Operator& operator=(const Operator& other);
+
                 ~Operator();
 
-                // métodos
                 std::string getName() const;
                 std::string getCpf() const;
                 std::string getEmail() const;
@@ -46,15 +39,14 @@ namespace sgc{
 
             private:
 
+                void release();
+
                 std::string name;
                 std::string cpf;
                 std::string email;
 
-                RSAKeyPair* keyPair;
-                PublicKey* publicKey;
-                PrivateKey* privateKey;
+                KeyPair* keyPair;
                 Certificate* certificate;
-
         };
 
     }

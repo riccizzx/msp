@@ -3,8 +3,11 @@
 #define FILE_HANDLE_HPP
 
 #include <string>
+#include <fstream>
+#include <stdexcept>
+#include <iostream>
 
-
+#include <libcryptosec/ByteArray.h>
 
 namespace sgc{
 
@@ -18,16 +21,12 @@ namespace sgc{
         */
 
         public:
-            FileHandle();
             ~FileHandle();
 
-            void openFile(const std::string& filePath);
-            void closeFile();
-            std::string readFile();
-            void writeFile(const std::string& data);
+            ByteArray read_file(const char* filePath);
+            
+            void write_file(const char* filePath, ByteArray& data);
 
-        private:
-            int m_fileDescriptor;
     };
 
 }
