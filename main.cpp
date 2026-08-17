@@ -5,6 +5,7 @@
 #include "include/file_io/file_handler.hpp"
 #include "include/operator/operator.hpp"
 #include "include/paths/paths.hpp"
+#include "include/operator/create_operator.hpp"
 
 using namespace sgc;
 using namespace op;
@@ -18,11 +19,23 @@ int main(int argc, char **argv) {
 	
     // read pdf file
     FileHandle fileHandler;
-    ByteArray document = fileHandler.read_file(PDF_PATH);
+    try{
+        ByteArray document = fileHandler.read_file(PDF_PATH);
+    
+    }
+    catch(const std::exception &e){
+        printf("Erro ao ler o arquivo PDF: %s\n", e.what());
+        return 1;
+    }
 
-    // usuario cria operadores com seus respectivo atributos
 
-    // montar os operator para o cliente
+    // teste
+    Operator* gui = OperatorCreation::createOperator("Guilherme", "12345678900", "guilherme@labsec.br");
+    Certificate* cert = gui->getCertificate();
+    std::cout << cert->getPemEncoded() << std::endl;
+    
+    delete cert;
+    delete gui;
 
 	return 0;
 }
