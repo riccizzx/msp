@@ -10,7 +10,8 @@
 using namespace sgc;
 using namespace op;
 
-const char* PDF_PATH = "/home/gui/Documents/code/pam/testes/teste.pdf";
+// Kept relative to the project so it works both locally and in the container.
+const char* PDF_PATH = "document/test.pdf";
 
 int main(int argc, char **argv) {
 
@@ -32,6 +33,9 @@ int main(int argc, char **argv) {
     // teste
     Operator* gui = OperatorCreation::createOperator("Guilherme", "12345678900", "guilherme@labsec.br");
     Certificate* cert = gui->getCertificate();
+    
+    
+
     std::cout << cert->getPemEncoded() << std::endl;
     
     delete cert;

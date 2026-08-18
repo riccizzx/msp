@@ -49,10 +49,13 @@ RUN cd /home/sgc/ \
 # Setup a nice welcoming message :)
 #RUN echo '\ncat /opt/README' >> ~/.bashrc
 
-# Creating the challenge directory.
-# Good Luck!
-# docker run -ti --name labsec-challenge labsec-challenge bash
-RUN mkdir /home/sgc/pam
-COPY main.cpp /home/sgc/pam/
-COPY Makefile /home/sgc/pam/
-# COPY README /opt/
+# Application source and the input used by the smoke test.
+WORKDIR /home/sgc/pam
+COPY Makefile main.cpp ./
+COPY include ./include
+COPY src ./src
+COPY document ./document
+
+# Start an interactive shell in the project directory. From here, run:
+#   make test
+CMD ["/bin/bash"]

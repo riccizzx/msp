@@ -1,40 +1,57 @@
-## CC FLAGS
-NAME = main.out
-CC = g++
-CPPFLAGS = -g -std=c++98
-DEFS = -DFIPS
+# Build and test the PAM prototype.
+#
+# Override dependency locations when they are not installed in the defaults:
+#   make OPENSSL_PREFIX=/path/to/openssl LIBCRYPTOSEC_PREFIX=/path/to/libcryptosec
 
-## ENVIRONMENT
-OPENSSL_PREFIX ?= /usr/local/ssl
-OPENSSL_LIBDIR ?= $(OPENSSL_PREFIX)/lib
-OPENSSL_INCLUDEDIR ?= $(OPENSSL_PREFIX)/include
-LIBCRYPTOSEC_PREFIX ?= /usr/local
-LIBCRYPTOSEC ?= $(LIBCRYPTOSEC_PREFIX)/lib64/libcryptosec.so
-LIBCRYPTOSEC_INCLUDEDIR ?= $(LIBCRYPTOSEC_PREFIX)/include/libcryptosec/
-LIBP11_PREFIX ?= /opt/libp11/
-LIBP11_INCLUDEDIR ?= $(LIBP11_PREFIX)/include/
+TARGET       := build/pam
+BUILD_DIR    := build
+CXX          ?= g++
 
-## DEPENDENCIES
-LIBS = $(LIBCRYPTOSEC) -L$(OPENSSL_LIBDIR) -Wl,-rpath,$(OPENSSL_LIBDIR) -lcrypto -pthread
-INCLUDES = -I$(OPENSSL_INCLUDEDIR) -I$(LIBCRYPTOSEC_INCLUDEDIR) -I$(LIBP11_INCLUDEDIR)
+OPENSSL_PREFIX       ?= /usr/local/ssl
+OPENSSL_LIBDIR       ?= $(OPENSSL_PREFIX)/lib
+OPENSSL_INCLUDEDIR   ?= $(OPENSSL_PREFIX)/include
+LIBCRYPTOSEC_PREFIX  ?= /usr/local
+LIBCRYPTOSEC_LIBDIR  ?= $(LIBCRYPTOSEC_PREFIX)/lib64
+LIBCRYPTOSEC_INCLUDE ?= $(LIBCRYPTOSEC_PREFIX)/include
+LIBP11_PREFIX        ?= /opt/libp11
+LIBP11_INCLUDEDIR    ?= $(LIBP11_PREFIX)/include
 
-## OBJECTS
-# Initialize variables explicitly to avoid environment interference
-SRCS := $(wildcard *.cpp)
-OBJS := $(SRCS:.cpp=.o)
+CPPFLAGS += -I. -I$(OPENSSL_INCLUDEDIR) -I$(LIBCRYPTOSEC_INCLUDE) -I$(LIBP11_INCLUDEDIR) -DFIPS
+CXXFLAGS += -std=c++98 -g -O0 -Wall -Wextra
+LDFLAGS  += -L$(LIBCRYPTOSEC_LIBDIR) -L$(OPENSSL_LIBDIR) \
+            -Wl,-rpath,$(LIBCRYPTOSEC_LIBDIR) -Wl,-rpath,$(OPENSSL_LIBDIR)
+LDLIBS   += -lcryptosec -lcrypto -pthread
 
-## AUX TARGETS
-# Pattern rule for compiling .cpp to .o
-%.o: %.cpp
-	$(CC) $(CPPFLAGS) $(DEFS) $(INCLUDES) -O0 -Wall -c -o "$@" "$<"
+SOURCES := main.cpp $(shell find src -type f -name '*.cpp' | sort)
+OBJECTS := $(patsubst %.cpp,$(BUILD_DIR)/%.o,$(SOURCES))
+DEPS    := $(OBJECTS:.o=.d)
 
-# Fixed: Added tab-indented recipe for .comp
-.comp: $(OBJS)
-	$(CC) $(CPPFLAGS) $(DEFS) -o $(NAME) $(OBJS) $(LIBS)
-	@echo 'Build complete!'
+.PHONY: all build run test clean help
 
-## TARGETS
-all: .comp
+all: build
+
+build: $(TARGET)
+
+$(TARGET): $(OBJECTS)
+	@mkdir -p $(dir $@)
+	$(CXX) $(LDFLAGS) -o $@ $^ $(LDLIBS)
+
+$(BUILD_DIR)/%.o: %.cpp
+	@mkdir -p $(dir $@)
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -MMD -MP -c $< -o $@
+
+# The current executable contains the project's manual smoke test.
+run test: $(TARGET)
+	./$(TARGET)
 
 clean:
-	rm -rf *.o $(NAME)   
+	rm -rf $(BUILD_DIR)
+
+help:
+	@printf '%s\n' \
+	  'make build  - compile the application' \
+	  'make run    - build and run the application' \
+	  'make test   - run the current smoke test' \
+	  'make clean  - remove generated build files'
+
+-include $(DEPS)
