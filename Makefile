@@ -40,9 +40,11 @@ $(BUILD_DIR)/%.o: %.cpp
 	@mkdir -p $(dir $@)
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -MMD -MP -c $< -o $@
 
-# The current executable contains the project's manual smoke test.
-run test: $(TARGET)
-	./$(TARGET)
+run: $(TARGET)
+	./$(TARGET) --help
+
+test: $(TARGET)
+	sh tests/run_tests.sh ./$(TARGET)
 
 clean:
 	rm -rf $(BUILD_DIR)
@@ -50,8 +52,8 @@ clean:
 help:
 	@printf '%s\n' \
 	  'make build  - compile the application' \
-	  'make run    - build and run the application' \
-	  'make test   - run the current smoke test' \
+		  'make run    - show the application usage' \
+		  'make test   - run the end-to-end challenge scenarios' \
 	  'make clean  - remove generated build files'
 
 -include $(DEPS)
