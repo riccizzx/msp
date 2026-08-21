@@ -1,20 +1,21 @@
+
 #include "include/operator/operator.hpp"
 
 using namespace sgc;
 
 op::Operator::Operator(
     const std::string& name,
-    const std::string& cpf,
+    const std::string& id,
     const std::string& email,
     RSAKeyPair* keyPair,
     Certificate* certificate
-) : name(name), cpf(cpf), email(email), keyPair(keyPair), certificate(certificate) {
+) : name(name), id(), email(email), keyPair(keyPair), certificate(certificate) {
 
 }
 
 op::Operator::Operator(const Operator& other){
     this->name = other.name;
-    this->cpf = other.cpf;
+    this->id = other.id;
     this->email = other.email;
 
     this->keyPair = (other.keyPair != NULL) ? new KeyPair(*other.keyPair) : NULL;
@@ -29,7 +30,7 @@ op::Operator& op::Operator::operator=(const Operator& other){
     this->release();
 
     this->name = other.name;
-    this->cpf = other.cpf;
+    this->id = other.id;
     this->email = other.email;
 
     this->keyPair = (other.keyPair != NULL) ? new KeyPair(*other.keyPair) : NULL;
@@ -53,8 +54,8 @@ std::string op::Operator::getName() const {
     return this->name;
 }
 
-std::string op::Operator::getCpf() const {
-    return this->cpf;
+std::string op::Operator::getId() const {
+    return this->id;
 }
 
 std::string op::Operator::getEmail() const {

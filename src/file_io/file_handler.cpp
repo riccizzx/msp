@@ -25,6 +25,9 @@ ByteArray FileHandle::read_file(const char* filePath)
 
     ByteArray data(static_cast<unsigned int>(size));
     file.read(reinterpret_cast<char*>(data.getDataPointer()), size);
+    if (!file) {
+        throw std::runtime_error("Failed to read the complete file: " + std::string(filePath));
+    }
     file.close();
     return data;
 
@@ -45,6 +48,9 @@ void FileHandle::write_file(const char* filePath, ByteArray& data)
     }
 
     file.write(reinterpret_cast<char*>(data.getDataPointer()), data.size());
+    if (!file) {
+        throw std::runtime_error("Failed to write the complete file: " + std::string(filePath));
+    }
     file.close();
 
 }

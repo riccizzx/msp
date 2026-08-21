@@ -10,16 +10,18 @@
 
 using namespace sgc;
 
+// i based it on my implementation that i create to resolve the SGC challenge
+// src: https://github.com/riccizzx/sgc-challange/blob/personal-solutions/src/milestones/ThirdMilestone.cpp
+
 op::Operator* op::OperatorCreation::createOperator(
     const std::string& name,
-    const std::string& cpf,
+    const std::string& id,
     const std::string& email
 ){
     RSAKeyPair* keyPair = OperatorCreation::createOperatorKey();
-    Certificate* certificate = OperatorCreation::createOperatorCert(name, cpf, email, *keyPair);
+    Certificate* certificate = OperatorCreation::createOperatorCert(name, id, email, *keyPair);
 
-    // Operator assume a posse de keyPair e certificate (ver operator.hpp)
-    return new Operator(name, cpf, email, keyPair, certificate);
+    return new Operator(name, id, email, keyPair, certificate);
 }
 
 RSAKeyPair* op::OperatorCreation::createOperatorKey(){
@@ -28,22 +30,27 @@ RSAKeyPair* op::OperatorCreation::createOperatorKey(){
 
 Certificate* op::OperatorCreation::createOperatorCert(
     const std::string& name,
-    const std::string& cpf,
+    const std::string& id,
     const std::string& email,
     RSAKeyPair& keyPair
 ){
     RDNSequence subject;
     subject.addEntry(RDNSequence::COMMON_NAME, name);
     subject.addEntry(RDNSequence::EMAIL, email);
-    subject.addEntry(RDNSequence::SERIAL_NUMBER, cpf); // usamos SERIAL_NUMBER pra carregar o CPF
+    subject.addEntry(RDNSequence::SERIAL_NUMBER, id);
 
     CertificateBuilder builder;
     builder.setSubject(subject);
-    builder.setIssuer(subject); // autoassinado: emissor == titular
+    builder.setIssuer(subject); // autosigned: emissor == titular
 
-    // NOTA: time(NULL) como serial é só o bastante pro protótipo. Se você
-    // criar vários operadores no mesmo segundo, pode colidir. Numa versão
-    // mais séria, use um contador incremental ou combine com rand().
+    /*
+    
+    NOTE: time(NULL) is sufficient for a prototype, but... if the user creates many operators within
+    the same second, collisions may occur. In a more robust implementation for a real-world system, use a counter
+    or combine it with rand().
+    
+    */
+    
     builder.setSerialNumber((long) time(NULL));
 
     DateTime notBefore((time_t) time(NULL));
@@ -57,7 +64,11 @@ Certificate* op::OperatorCreation::createOperatorCert(
     delete publicKey;
 
     PrivateKey* privateKey = keyPair.getPrivateKey();
-    Certificate* certificate = builder.sign(*privateKey, MessageDigest::SHA256);
+    Certificate* certificate = builder.sign(*privateKey, MessageDigest::SHA256); // in this case, the private key
+    // who sign the certificate is the same user private key, not a Certificate Autorathy
+
+    // Certificate* cert = builder.sign(*ca->privateKey, SHA256);
+
     delete privateKey;
 
     return certificate;
