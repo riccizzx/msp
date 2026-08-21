@@ -1,4 +1,4 @@
-// include/agreement/multi_signature.hpp
+
 #ifndef MULTI_SIGNATURE_HPP
 #define MULTI_SIGNATURE_HPP
 
@@ -10,32 +10,40 @@
 #include "include/operator/operator.hpp"
 
 namespace sgc{
+
 namespace agreement{
 
-    // Encapsula o pacote PKCS7 SignedData. Não sabe quantos operadores
-    // são esperados nem quem já assinou -- isso é responsabilidade da Agreement.
+    // Encapsulates the PKCS7 SignedData package. It does not know how many
+    // operators are expected or who has already signed—that is the responsibility of the Agreement.
+    
     class MultiSignature{
 
         public:
             MultiSignature();
             ~MultiSignature();
 
-            // chame para o PRIMEIRO operador (inicializa o pacote com o documento).
+            // call for the first operator (initialize the first packed with the document)
             void addFirstSigner(const op::Operator& signer, ByteArray& document, bool attachContent = true);
 
-            // chame para os operadores seguintes.
+            // call for other operators
             void addSigner(const op::Operator& signer);
 
             bool isInitialized() const;
+            bool isFinalized() const;
             unsigned int signerCount() const;
 
-            // só chame depois de todos os assinantes adicionados.
-            // devolve objeto novo; quem chama é dono do ponteiro.
+            // only call after all the signers beign add
             Pkcs7SignedData* build();
 
         private:
+
+            MultiSignature(const MultiSignature&);
+            MultiSignature& operator=(const MultiSignature&);
+
             Pkcs7SignedDataBuilder* builder;
+            ByteArray document;
             unsigned int m_signerCount;
+            bool finalized;
             
     };
 

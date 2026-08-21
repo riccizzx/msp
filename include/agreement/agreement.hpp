@@ -1,4 +1,4 @@
-// include/agreement/agreement.hpp
+
 #ifndef AGREEMENT_HPP
 #define AGREEMENT_HPP
 
@@ -11,19 +11,24 @@
 namespace sgc{
 namespace agreement{
 
-    // Uma rodada do protocolo: um documento + o conjunto de operadores
-    // que precisam assiná-lo. Implementa a regra "só existe conjunto de
-    // assinaturas se TODOS assinarem".
+    // One round of the protocol: a document + the set of operators
+    // who need to sign it. The agreement exists only when EVERYONE signs.
+    
     class Agreement{
 
         public:
-            enum State { PENDING, COMPLETE, ABORTED };
+            enum State { PENDING, COMPLETE, ABORTED, FINALIZED };
 
-            Agreement(ByteArray& document, const std::vector<std::string>& expectedCpfs);
+            Agreement(ByteArray& document, const std::vector<std::string>& expectedIds);
+            
+            bool sign(const op::Operator& signer){
 
-            // Retorna false se o operador não é esperado, já assinou,
-            // ou o acordo já não está mais PENDING.
-            bool sign(const op::Operator& signer);
+                /*
+                Returns false if the operator is not expected, has already signed,
+                or the agreement is no longer PENDING.
+                */
+
+            };
 
             void abort();
 
@@ -31,13 +36,37 @@ namespace agreement{
             unsigned int signedCount() const;
             unsigned int expectedCount() const;
 
-            // só chame quando getState() == COMPLETE. Dono do ponteiro é o chamador.
-            Pkcs7SignedData* finalPackage();
+            Pkcs7SignedData* finalPackage(){
+
+                /*
+                Can only be called once and when the state is COMPLETE. 
+                The caller assumes ownership of the returned pointer..
+                */
+
+            };
+
+
+            static bool verifyPackage(
+                Pkcs7SignedData& package,
+                const std::vector<std::string>& expectedIds
+            )
+            {
+
+                /*
+                Verifies the cryptographic signatures and whether the package contains
+                exactly the certificates of the expected operators.
+                */
+
+            };
 
         private:
+
+            Agreement(const Agreement&);
+            Agreement& operator=(const Agreement&);
+
             ByteArray document;
-            std::vector<std::string> expectedCpfs;
-            std::vector<std::string> signedCpfs;
+            std::vector<std::string> expectedIds;
+            std::vector<std::string> signedIds;
             MultiSignature engine;
             State state;
     };

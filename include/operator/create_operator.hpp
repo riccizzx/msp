@@ -12,38 +12,44 @@
 namespace sgc{
     namespace op{
 
-        // Fábrica responsável por gerar, pra um operador, o par de chaves RSA
-        // e o certificado digital que o identifica, empacotando tudo num
-        // Operator pronto pra uso.
+        // Factory responsible for generating the RSA key pair and the
+        // identifying digital certificate for an operator, packaging
+        // everything into a ready-to-use Operator object.
         //
-        // SIMPLIFICAÇÃO DELIBERADA deste protótipo: o certificado gerado é
-        // AUTOASSINADO (o operador assina o próprio certificado com a
-        // própria chave privada). Numa ICP real -- como a que você leu no
-        // TCC do Hawa -- é uma Autoridade Certificadora quem assina o
-        // certificado do usuário final, nunca ele mesmo. Vale registrar essa
-        // diferença no relatório, explicando o porquê da simplificação.
+        // DELIBERATE SIMPLIFICATION in this prototype: the generated
+        // certificate is SELF-SIGNED (the operator signs their own
+        // certificate using their own private key). In a real PKI—such
+        // as the one described in Hawa's thesis—a Certificate Authority
+        // signs the end-user's certificate, never the user themselves.
+        // It is worth noting this difference in the report and
+        // explaining the reason for the simplification.
+        
         class OperatorCreation{
 
             public:
                 static Operator* createOperator(
                     const std::string& name,
-                    const std::string& cpf,
+                    const std::string& id,
                     const std::string& email
                 );
 
-                static RSAKeyPair* createOperatorKey();
+                static RSAKeyPair* createOperatorKey(){
 
+                    // create operator KeyPairs based on OPERATOR_KEY_SIZE;
+                    // return a RSAKeyPair type
+
+                };
                 static Certificate* createOperatorCert(
                     const std::string& name,
-                    const std::string& cpf,
+                    const std::string& id,
                     const std::string& email,
                     RSAKeyPair& keyPair
                 );
 
             private:
-                OperatorCreation(); // não declarado -- impede instanciação
+                OperatorCreation(); 
 
-                static const int OPERATOR_KEY_SIZE = 2048;
+                static const int OPERATOR_KEY_SIZE = 2048; 
         };
     }
 }
