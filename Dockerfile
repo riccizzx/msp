@@ -55,6 +55,7 @@ COPY Makefile main.cpp ./
 COPY include ./include
 COPY src ./src
 COPY document ./document
+COPY tests ./tests
 
 # Start an interactive shell in the project directory. From here, run:
 #   make test
