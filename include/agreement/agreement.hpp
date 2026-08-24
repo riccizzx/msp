@@ -18,25 +18,21 @@ public:
 
     Agreement(ByteArray& document, const std::vector<std::string>& expectedIds);
 
-    // Returns false when the signer is not expected, already signed, or the
-    // agreement is no longer pending.
     bool sign(const op::Operator& signer);
-
     void abort();
 
     State getState() const;
     unsigned int signedCount() const;
     unsigned int expectedCount() const;
 
-    // Can only be called once and after all expected operators have signed.
-    // Ownership of the returned pointer is transferred to the caller.
     Pkcs7SignedData* finalPackage();
 
-    // Verifies the CMS signatures and requires exactly one SignerInfo for each
-    // expected operator identity.
+    // trustedFingerprints must be parallel to expectedIds and contain the
+    // SHA-256 fingerprint of each trusted signer certificate.
     static bool verifyPackage(
         Pkcs7SignedData& package,
-        const std::vector<std::string>& expectedIds
+        const std::vector<std::string>& expectedIds,
+        const std::vector<std::string>& trustedFingerprints
     );
 
 private:
