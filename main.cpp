@@ -1,4 +1,3 @@
-
 #include <iostream>
 #include <memory>
 #include <stdexcept>
@@ -26,26 +25,18 @@ std::vector<std::string> demoOperatorIds(){
     return ids;
 }
 
-std::vector<Operator*> createDemoOperators(){ 
-
-    /* 
-    Create operator, based on operator and craete operator Entity Classes. This will use in a "painel"
-    so... a user can sign in the server and create your own identity. This is just a test case, none of this
-    informations is real.
-    */
-
+std::vector<Operator*> createDemoOperators(){
     std::vector<Operator*> operators;
     try {
         operators.push_back(OperatorCreation::createOperator(
-            "Guilherme", "Ricci", "guilherme.ricci@example.test"
+            "Guilherme Ricci", "operator-1", "guilherme.ricci@example.test"
         ));
         operators.push_back(OperatorCreation::createOperator(
-            "Heitor", "Kaxu", "Heitor.Kaxu@example.test"
+            "Heitor Kaxu", "operator-2", "heitor.kaxu@example.test"
         ));
         operators.push_back(OperatorCreation::createOperator(
-            "Henrique", "Rofl", "Rick.Rofl@example.test"
+            "Henrique Rofl", "operator-3", "henrique.rofl@example.test"
         ));
-
     } catch (...) {
         for (size_t i = 0; i < operators.size(); ++i) {
             delete operators[i];
@@ -60,24 +51,7 @@ void destroyOperators(std::vector<Operator*>& operators){
     for (size_t i = 0; i < operators.size(); ++i) {
         delete operators[i];
     }
-    
     operators.clear();
-}
-
-void deleteOp_ID(std::vector<Operator*>& op, const std::string& id){
-    /*
-    if a user want to delete his own account, just type the id and this function is called.
-    
-    */
-    for (size_t i=0; i< op.size(); ++i){
-        if (op[i]->getId() == id){
-            delete op[i];
-        }
-
-    }
-    
-    op.clear();
-
 }
 
 bool isPdf(const ByteArray& document){
