@@ -1,4 +1,3 @@
-
 #ifndef OPERATOR_CREATION_HPP
 #define OPERATOR_CREATION_HPP
 
@@ -9,49 +8,36 @@
 
 #include "operator.hpp"
 
-namespace sgc{
-    namespace op{
+namespace sgc {
+namespace op {
 
-        // Factory responsible for generating the RSA key pair and the
-        // identifying digital certificate for an operator, packaging
-        // everything into a ready-to-use Operator object.
-        //
-        // DELIBERATE SIMPLIFICATION in this prototype: the generated
-        // certificate is SELF-SIGNED (the operator signs their own
-        // certificate using their own private key). In a real PKI—such
-        // as the one described in Hawa's thesis—a Certificate Authority
-        // signs the end-user's certificate, never the user themselves.
-        // It is worth noting this difference in the report and
-        // explaining the reason for the simplification.
-        
-        class OperatorCreation{
+// Factory responsible for creating the key material and certificate used by
+// an Operator. The prototype certificates are deliberately self-signed; they
+// prove key possession, not membership in an external PKI.
+class OperatorCreation {
+public:
+    static Operator* createOperator(
+        const std::string& name,
+        const std::string& id,
+        const std::string& email
+    );
 
-            public:
-                static Operator* createOperator(
-                    const std::string& name,
-                    const std::string& id,
-                    const std::string& email
-                );
+    static RSAKeyPair* createOperatorKey();
 
-                static RSAKeyPair* createOperatorKey(){
+    static Certificate* createOperatorCert(
+        const std::string& name,
+        const std::string& id,
+        const std::string& email,
+        RSAKeyPair& keyPair
+    );
 
-                    // create operator KeyPairs based on OPERATOR_KEY_SIZE;
-                    // return a RSAKeyPair type
+private:
+    OperatorCreation();
 
-                };
-                static Certificate* createOperatorCert(
-                    const std::string& name,
-                    const std::string& id,
-                    const std::string& email,
-                    RSAKeyPair& keyPair
-                );
+    static const int OPERATOR_KEY_SIZE = 2048;
+};
 
-            private:
-                OperatorCreation(); 
-
-                static const int OPERATOR_KEY_SIZE = 2048; 
-        };
-    }
-}
+} // namespace op
+} // namespace sgc
 
 #endif
