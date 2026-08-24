@@ -1,6 +1,6 @@
-
 #include <iostream>
 #include <memory>
+#include <sstream>
 #include <stdexcept>
 #include <string>
 #include <vector>
@@ -26,26 +26,18 @@ std::vector<std::string> demoOperatorIds(){
     return ids;
 }
 
-std::vector<Operator*> createDemoOperators(){ 
-
-    /* 
-    Create operator, based on operator and craete operator Entity Classes. This will use in a "painel"
-    so... a user can sign in the server and create your own identity. This is just a test case, none of this
-    informations is real.
-    */
-
+std::vector<Operator*> createDemoOperators(){
     std::vector<Operator*> operators;
     try {
         operators.push_back(OperatorCreation::createOperator(
-            "Guilherme", "Ricci", "guilherme.ricci@example.test"
+            "Guilherme Ricci", "operator-1", "guilherme.ricci@example.test"
         ));
         operators.push_back(OperatorCreation::createOperator(
-            "Heitor", "Kaxu", "Heitor.Kaxu@example.test"
+            "Heitor Kaxu", "operator-2", "heitor.kaxu@example.test"
         ));
         operators.push_back(OperatorCreation::createOperator(
-            "Henrique", "Rofl", "Rick.Rofl@example.test"
+            "Henrique Rofl", "operator-3", "henrique.rofl@example.test"
         ));
-
     } catch (...) {
         for (size_t i = 0; i < operators.size(); ++i) {
             delete operators[i];
@@ -60,24 +52,83 @@ void destroyOperators(std::vector<Operator*>& operators){
     for (size_t i = 0; i < operators.size(); ++i) {
         delete operators[i];
     }
-    
     operators.clear();
 }
 
-void deleteOp_ID(std::vector<Operator*>& op, const std::string& id){
-    /*
-    if a user want to delete his own account, just type the id and this function is called.
-    
-    */
-    for (size_t i=0; i< op.size(); ++i){
-        if (op[i]->getId() == id){
-            delete op[i];
+std::vector<std::string> operatorFingerprints(
+    const std::vector<Operator*>& operators
+){
+    std::vector<std::string> fingerprints;
+    for (size_t i = 0; i < operators.size(); ++i) {
+        std::auto_ptr<Certificate> certificate(operators[i]->getCertificate());
+        fingerprints.push_back(
+            certificate->getFingerPrint(MessageDigest::SHA256).toHex()
+        );
+    }
+    return fingerprints;
+}
+
+std::string trustPathFor(const std::string& packagePath){
+    return packagePath + ".trust";
+}
+
+void writeTrustFile(
+    FileHandle& fileHandler,
+    const std::string& packagePath,
+    const std::vector<std::string>& ids,
+    const std::vector<std::string>& fingerprints
+){
+    if (ids.size() != fingerprints.size()) {
+        throw std::runtime_error("invalid trust store data");
+    }
+
+    std::ostringstream out;
+    out << "MSP-TRUST/1\n";
+    for (size_t i = 0; i < ids.size(); ++i) {
+        out << ids[i] << "=" << fingerprints[i] << "\n";
+    }
+
+    ByteArray data(out.str());
+    const std::string trustPath = trustPathFor(packagePath);
+    fileHandler.write_file(trustPath.c_str(), data);
+}
+
+std::vector<std::string> readTrustFile(
+    FileHandle& fileHandler,
+    const std::string& packagePath,
+    const std::vector<std::string>& expectedIds
+){
+    const std::string trustPath = trustPathFor(packagePath);
+    ByteArray data = fileHandler.read_file(trustPath.c_str());
+    const std::string text(
+        reinterpret_cast<const char*>(data.getDataPointer()),
+        static_cast<std::string::size_type>(data.size())
+    );
+
+    std::istringstream in(text);
+    std::string line;
+    if (!std::getline(in, line) || line != "MSP-TRUST/1") {
+        throw std::runtime_error("invalid trust store header");
+    }
+
+    std::vector<std::string> fingerprints;
+    for (size_t i = 0; i < expectedIds.size(); ++i) {
+        if (!std::getline(in, line)) {
+            throw std::runtime_error("trust store is incomplete");
         }
 
+        const std::string prefix = expectedIds[i] + "=";
+        if (line.compare(0, prefix.size(), prefix) != 0 || line.size() == prefix.size()) {
+            throw std::runtime_error("trust store identity does not match expected operator");
+        }
+        fingerprints.push_back(line.substr(prefix.size()));
     }
-    
-    op.clear();
 
+    if (std::getline(in, line) && !line.empty()) {
+        throw std::runtime_error("trust store contains unexpected identities");
+    }
+
+    return fingerprints;
 }
 
 bool isPdf(const ByteArray& document){
@@ -103,6 +154,9 @@ void printUsage(const char* program){
         << "  " << program << " sign <input.pdf> <agreement.p7s>"
         << " [--reject <operator-id>]\n"
         << "  " << program << " verify <agreement.p7s>\n\n"
+        << "Signing also writes <agreement.p7s>.trust with the pinned SHA-256\n"
+        << "certificate fingerprints required by verification. Keep that trust\n"
+        << "file as an out-of-band trust anchor.\n\n"
         << "Demo operators: operator-1, operator-2, operator-3\n";
 }
 
@@ -124,6 +178,7 @@ int signDocument(
 
     std::vector<Operator*> operators = createDemoOperators();
     try {
+        const std::vector<std::string> trustedFingerprints = operatorFingerprints(operators);
         Agreement agreement(document, expectedIds);
 
         for (size_t i = 0; i < operators.size(); ++i) {
@@ -152,16 +207,18 @@ int signDocument(
         }
 
         std::auto_ptr<Pkcs7SignedData> package(agreement.finalPackage());
-        if (!Agreement::verifyPackage(*package, expectedIds)) {
+        if (!Agreement::verifyPackage(*package, expectedIds, trustedFingerprints)) {
             throw std::runtime_error("generated signatures could not be verified");
         }
 
         ByteArray encoded = package->getDerEncoded();
         fileHandler.write_file(outputPath, encoded);
+        writeTrustFile(fileHandler, outputPath, expectedIds, trustedFingerprints);
 
         std::cout << "Agreement complete: all " << expectedIds.size()
                   << " signatures are valid.\n"
-                  << "PKCS#7 package written to " << outputPath << "\n";
+                  << "PKCS#7 package written to " << outputPath << "\n"
+                  << "Trust pins written to " << trustPathFor(outputPath) << "\n";
     } catch (...) {
         destroyOperators(operators);
         throw;
@@ -182,13 +239,16 @@ int verifyAgreement(const char* packagePath){
 
     Pkcs7SignedData* signedPackage = static_cast<Pkcs7SignedData*>(package.get());
     const std::vector<std::string> expectedIds = demoOperatorIds();
-    if (!Agreement::verifyPackage(*signedPackage, expectedIds)) {
-        std::cout << "INVALID: signatures or expected operator identities do not match.\n";
+    const std::vector<std::string> trustedFingerprints =
+        readTrustFile(fileHandler, packagePath, expectedIds);
+
+    if (!Agreement::verifyPackage(*signedPackage, expectedIds, trustedFingerprints)) {
+        std::cout << "INVALID: signatures, agreement policy, or trusted signer identities do not match.\n";
         return 3;
     }
 
     std::cout << "VALID: all " << expectedIds.size()
-              << " operator signatures and the embedded PDF are intact.\n";
+              << " trusted operator signatures, the signed policy, and embedded PDF are intact.\n";
     return 0;
 }
 
