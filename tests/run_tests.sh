@@ -34,8 +34,7 @@ fi
 echo "[5/5] trust-pin tampering is rejected"
 cp "$test_dir/agreement.p7s" "$test_dir/bad-trust.p7s"
 cp "$test_dir/agreement.p7s.trust" "$test_dir/bad-trust.p7s.trust"
-# Change one hexadecimal nibble in operator-1's pinned certificate fingerprint.
-sed 's/^operator-1=./operator-1=0/' "$test_dir/bad-trust.p7s.trust" > "$test_dir/trust.tmp"
+sed 's/^operator-1=[0-9A-F]/operator-1=Z/' "$test_dir/bad-trust.p7s.trust" > "$test_dir/trust.tmp"
 mv "$test_dir/trust.tmp" "$test_dir/bad-trust.p7s.trust"
 if "$app" verify "$test_dir/bad-trust.p7s"; then
     echo "package with a modified trust pin was unexpectedly accepted" >&2
