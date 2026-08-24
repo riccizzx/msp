@@ -1,4 +1,3 @@
-
 #include "include/operator/operator.hpp"
 
 using namespace sgc;
@@ -9,8 +8,7 @@ op::Operator::Operator(
     const std::string& email,
     RSAKeyPair* keyPair,
     Certificate* certificate
-) : name(name), id(), email(email), keyPair(keyPair), certificate(certificate) {
-
+) : name(name), id(id), email(email), keyPair(keyPair), certificate(certificate) {
 }
 
 op::Operator::Operator(const Operator& other){
