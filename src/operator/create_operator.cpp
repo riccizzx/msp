@@ -2,6 +2,7 @@
 #include "include/operator/create_operator.hpp"
 
 #include <ctime>
+#include <memory>
 
 #include <libcryptosec/certificate/CertificateBuilder.h>
 #include <libcryptosec/certificate/RDNSequence.h>
@@ -18,10 +19,13 @@ op::Operator* op::OperatorCreation::createOperator(
     const std::string& id,
     const std::string& email
 ){
-    RSAKeyPair* keyPair = OperatorCreation::createOperatorKey();
-    Certificate* certificate = OperatorCreation::createOperatorCert(name, id, email, *keyPair);
-
-    return new Operator(name, id, email, keyPair, certificate);
+    std::auto_ptr<RSAKeyPair> keyPair(OperatorCreation::createOperatorKey());
+    std::auto_ptr<Certificate> certificate(
+        OperatorCreation::createOperatorCert(name, id, email, *keyPair));
+    Operator* result = new Operator(name, id, email, keyPair.get(), certificate.get());
+    keyPair.release();
+    certificate.release();
+    return result;
 }
 
 RSAKeyPair* op::OperatorCreation::createOperatorKey(){
@@ -59,17 +63,14 @@ Certificate* op::OperatorCreation::createOperatorCert(
     builder.setNotBefore(notBefore);
     builder.setNotAfter(notAfter);
 
-    PublicKey* publicKey = keyPair.getPublicKey();
+    std::auto_ptr<PublicKey> publicKey(keyPair.getPublicKey());
     builder.setPublicKey(*publicKey);
-    delete publicKey;
 
-    PrivateKey* privateKey = keyPair.getPrivateKey();
+    std::auto_ptr<PrivateKey> privateKey(keyPair.getPrivateKey());
     Certificate* certificate = builder.sign(*privateKey, MessageDigest::SHA256); // in this case, the private key
     // who sign the certificate is the same user private key, not a Certificate Autorathy
 
     // Certificate* cert = builder.sign(*ca->privateKey, SHA256);
-
-    delete privateKey;
 
     return certificate;
 }
