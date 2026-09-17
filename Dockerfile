@@ -51,11 +51,14 @@ RUN cd /home/sgc/ \
 
 # Application source and the input used by the smoke test.
 WORKDIR /home/sgc/pam
-COPY Makefile main.cpp ./
+COPY Makefile main.cpp web_main.cpp ./
 COPY include ./include
 COPY src ./src
 COPY document ./document
 COPY tests ./tests
+COPY third_party ./third_party
+COPY views ./views
+COPY public ./public
 
 # Start an interactive shell in the project directory. From here, run:
 #   make test
