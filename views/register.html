@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Criar conta · MSP local</title>
+  <link rel="stylesheet" href="/public/css/style.css">
+</head>
+<body>
+<header><a class="brand" href="/dashboard">MSP <span>local</span></a><span class="badge">Protótipo educacional</span></header>
+<main class="account"><p class="eyebrow">Comece por aqui</p><h1>Crie sua conta local</h1>
+<p>A conta será associada a um operador criptográfico. Tudo é apagado ao encerrar o servidor.</p>
+<p class="message" role="status">{{message}}</p>
+<form action="/register" method="post">
+<label for="name">Nome</label><input id="name" name="name" maxlength="100" autocomplete="name" required>
+<label for="email">Email</label><input id="email" name="email" type="email" maxlength="254" autocomplete="username" required>
+<label for="password">Senha</label><input id="password" name="password" type="password" minlength="12" maxlength="128" autocomplete="new-password" aria-describedby="password-help" required>
+<small id="password-help">Use de 12 a 128 bytes; caracteres acentuados podem ocupar mais de um byte.</small>
+<button type="submit">Criar conta</button></form><p>Já tem uma conta? <a href="/login">Entrar</a></p></main>
+<footer>HTTP local · Dados temporários em memória · CMS com três assinantes</footer>
+</body>
+</html>

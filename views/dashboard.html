@@ -1,0 +1,18 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Painel · MSP local</title>
+  <link rel="stylesheet" href="/public/css/style.css">
+</head>
+<body>
+<header><a class="brand" href="/dashboard">MSP <span>local</span></a><span class="badge">Protótipo educacional</span></header>
+<nav aria-label="Navegação"><a href="/dashboard">Painel</a><a href="/sign">Assinar PDF</a><form action="/logout" method="post"><button class="text-button" type="submit">Sair</button></form></nav><main><p class="eyebrow">Seu painel</p><h1>Olá, {{name}}</h1><p>Prepare um PDF e acompanhe uma rodada de assinatura unânime.</p>
+<section class="card"><h2>Sua identidade</h2><dl><dt>Conta</dt><dd>{{email}}</dd><dt>Operador associado</dt><dd class="identifier">{{operator}}</dd></dl>
+<p>A chave RSA e o certificado do operador são criados na primeira assinatura e mantidos em memória.</p></section>
+<section class="card"><h2>Assinatura de documentos</h2><p>{{status}}</p><a class="button" href="/sign">Assinar um PDF</a></section>
+<aside><strong>Como funciona esta demonstração</strong><p>Seu operador e dois operadores automáticos assinam o mesmo documento. Os três são controlados por este servidor; não há coleta de aprovação de outras pessoas.</p></aside></main>
+<footer>HTTP local · Dados temporários em memória · CMS com três assinantes</footer>
+</body>
+</html>

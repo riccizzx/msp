@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Assinar PDF · MSP local</title>
+  <link rel="stylesheet" href="/public/css/style.css">
+</head>
+<body>
+<header><a class="brand" href="/dashboard">MSP <span>local</span></a><span class="badge">Protótipo educacional</span></header>
+<nav aria-label="Navegação"><a href="/dashboard">Painel</a><a href="/sign">Assinar PDF</a><form action="/logout" method="post"><button class="text-button" type="submit">Sair</button></form></nav><main><p class="eyebrow">Nova operação</p><h1>Assinar um PDF</h1><p>Selecione um documento de até 10 MiB. A operação pode levar alguns segundos.</p>
+<p class="message" role="status">{{message}}</p>
+<section class="card"><form action="/sign" method="post" enctype="multipart/form-data">
+<label for="pdf">Documento PDF</label><input id="pdf" name="pdf" type="file" accept="application/pdf,.pdf" aria-describedby="pdf-help" required>
+<p id="pdf-help">O servidor verifica o tamanho, o cabeçalho e o marcador final do PDF. O nome do arquivo não determina seu conteúdo.</p>
+<p>Ao continuar, seu operador e dois operadores de demonstração assinarão automaticamente.</p>
+<button type="submit">Solicitar assinatura</button></form></section>
+<section class="card"><h2>Último resultado</h2><p>Após uma assinatura bem-sucedida, baixe os dois arquivos. Uma nova assinatura substitui o resultado anterior desta conta.</p>
+<div class="downloads"><a href="/sign/package">Baixar pacote .p7s</a><a href="/sign/trust">Baixar confiança .trust</a></div>
+<p>O resultado é um pacote CMS/PKCS#7 contendo a política e o PDF; não é uma assinatura visual ou PAdES no PDF original.</p></section>
+<aside>Guarde o arquivo de confiança e distribua-o por um canal independente do pacote, quando usado para verificar a identidade dos assinantes.</aside></main>
+<footer>HTTP local · Dados temporários em memória · CMS com três assinantes</footer>
+</body>
+</html>
